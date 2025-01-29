@@ -45,6 +45,7 @@ if menu == "Check Wallet ✅":
                 st.error("Invalid wallet address or no SOL available to claim.")
 
 elif menu == "Invite & Earn 📢":
-    st.header("Invite & Earn")
-    st.write("Share your referral link and earn rewards!")
-    st.write("Referral Link: https://solclaim.com/your-referral-link")
+    st.header("Invite & Earn 📢")
+    st.write("🚧 This feature is currently under development. 🚧")
+    st.write("We're working hard to bring you a seamless referral system where you can invite friends and earn rewards!")
+    st.write("Please check back soon for updates. Thank you for your patience! 🙏")
