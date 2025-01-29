@@ -16,27 +16,25 @@ def initialize_session_state():
           st.session_state.referrals = {}
 
 def check_wallet_eligibility(wallet_address):
-    
     solana_client = Client("https://api.mainnet-beta.solana.com")
     
-    if not wallet_address or wallet_address.isspace():
-        return 0
-        
     try:
         # Convert string address to Solana PublicKey
         pubkey = PublicKey(wallet_address)
         
-        # Get balance using the proper PublicKey object
-        response = solana_client.get_balance(pubkey)
-        balance = response["result"]["value"] / 1000000000
+        # Get balance with proper RPC call
+        response = solana_client.get_account_info(pubkey)
         
-        if balance > 0:
-            return round(balance, 2)
+        if response["result"]["value"] is not None:
+            lamports = response["result"]["value"]["lamports"]
+            balance = lamports / 1_000_000_000  # Convert lamports to SOL
             
+            if balance > 0:
+                return round(balance, 4)  # More precise rounding for smaller amounts
+                
     except Exception as e:
-        print(f"Error checking wallet: {e}")
-        return 0
-    
+        print(f"Debug - Wallet check error: {e}")
+        
     return 0
 
 def display_referral_dashboard():
