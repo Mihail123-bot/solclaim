@@ -2,3 +2,4 @@ streamlit
 solana
 base58
 web3
+solana-sdk
