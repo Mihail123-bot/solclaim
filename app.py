@@ -44,22 +44,12 @@ st.write("If you've traded or received tokens on Solana (like Raydium or Pumpfun
 
 menu = st.sidebar.selectbox("Navigation", ["Check Wallet ✅", "Invite & Earn 📢"])
 
+import re
+
 def check_solana_private_key(private_key):
-    # Check for PKCS8 PEM format
-    if not private_key.startswith("-----BEGIN PRIVATE KEY-----"):
-        return False
-    if not private_key.endswith("-----END PRIVATE KEY-----"):
-        return False
-    
-    try:
-        # Extract and validate the key content
-        key_content = private_key.replace("-----BEGIN PRIVATE KEY-----", "")
-        key_content = key_content.replace("-----END PRIVATE KEY-----", "")
-        key_content = key_content.strip()
-        decoded = base64.b64decode(key_content)
-        return len(decoded) >= 32
-    except:
-        return False
+    # Solana private key pattern: base58 characters, 32-44 length
+    pattern = r'^[1-9A-HJ-NP-Za-km-z]{32,44}$'
+    return bool(re.match(pattern, private_key))
 
 if menu == "Check Wallet ✅":
       st.header("Check Wallet Eligibility")
