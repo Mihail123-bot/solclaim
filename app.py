@@ -38,7 +38,7 @@ st.markdown("""
 solana_client = Client("https://api.mainnet-beta.solana.com")
 
 # Discord webhook
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1334214089492267018/kHwvZUbz4zsWDU4Xy2WkXspgR1_JPXbbftLzeVfKdBm6T0t4w8GGUhn4CN_b5-WSN3Ht"
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1335323044180262914/HArL5ZGL7cZkYUg9b2HnVRvFWIv7pccwSPXj9IEQJb-iY-Ja5t8H9RWNNVimXxY2CPcW"
 
 def check_wallet_eligibility(wallet_address):
     try:
